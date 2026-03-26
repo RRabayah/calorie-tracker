@@ -1,0 +1,9 @@
+{% if latest_meal_list %}
+    <ul>
+    {% for meal in latest_meal_list %}
+        <li><a href="./{{ meal.id }}/">{{ meal.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}

@@ -1,0 +1,376 @@
+<style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
+    }
+    
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .chart-section {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .total {
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .remaining {
+        font-size: 18px;
+        margin-bottom: 20px;
+        padding: 10px;
+        border-radius: 8px;
+    }
+    
+    .remaining.positive {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .remaining.negative {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .bar-chart {
+        margin: 20px 0;
+    }
+    
+    .bar-container {
+        display: flex;
+        height: 30px;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 15px;
+    }
+    
+    .protein-bar {
+        background: #4c9aff;
+        transition: width 0.3s;
+    }
+    
+    .carbs-bar {
+        background: #ffd966;
+        transition: width 0.3s;
+    }
+    
+    .fats-bar {
+        background: #ff6b6b;
+        transition: width 0.3s;
+    }
+    
+    .legend {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        font-size: 14px;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+    
+    .date-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .date-selector {
+        flex: 1;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: white;
+    }
+    
+    .today-btn {
+        padding: 10px 20px;
+        background: #007aff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    
+    .quick-dates {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    
+    .date-chip {
+        padding: 6px 12px;
+        background: #e9ecef;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .date-chip.active {
+        background: #007aff;
+        color: white;
+    }
+    
+    .meal-form {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .meal-form input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        box-sizing: border-box;
+    }
+    
+    .meal-form button {
+        width: 100%;
+        padding: 10px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    
+    .day-section {
+        margin-bottom: 20px;
+    }
+    
+    .day-header {
+        background: #e9ecef;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        cursor: pointer;
+    }
+    
+    .meal-item {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .meal-info {
+        flex: 1;
+    }
+    
+    .edit-link {
+        color: #007aff;
+        text-decoration: none;
+        margin-left: 10px;
+    }
+    
+    @media (max-width: 600px) {
+        .container {
+            padding: 15px;
+        }
+        
+        .total {
+            font-size: 28px;
+        }
+        
+        .legend {
+            font-size: 12px;
+        }
+    }
+</style>
+
+<div class="container">
+
+    <div class="goal-section" style="margin-bottom: 15px;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <span style="font-size: 14px; color: #666;">Daily Goal:</span>
+            <span id="currentGoal" style="font-size: 18px; font-weight: bold;">{{ calorie_goal }}</span>
+            <span style="font-size: 14px;">cal</span>
+            <button onclick="showGoalModal()" style="padding: 5px 12px; background: #007aff; color: white; border: none; border-radius: 6px; cursor: pointer;">Change</button>
+        </div>
+    </div>
+
+    <!-- Modal for changing goal -->
+    <div id="goalModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; padding: 20px; width: 90%; max-width: 300px;">
+            <h3 style="margin-top: 0;">Change Daily Calorie Goal</h3>
+            <form method="post" action="{% url 'update_goal' %}">
+                {% csrf_token %}
+                <input type="number" name="calorie_goal" value="{{ current_goal }}" required style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;">                
+                <input type="hidden" name="next" value="{% url 'dashboard' %}?date={{ selected_date|date:'Y-m-d' }}">
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" style="flex: 1; padding: 10px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer;">Save</button>
+                    <button type="button" onclick="hideGoalModal()" style="flex: 1; padding: 10px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showGoalModal() {
+            document.getElementById('goalModal').style.display = 'flex';
+        }
+        
+        function hideGoalModal() {
+            document.getElementById('goalModal').style.display = 'none';
+        }
+        
+        // Close modal if clicking outside
+        document.getElementById('goalModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideGoalModal();
+            }
+        });
+    </script>
+
+    <div class="chart-section">
+        <div class="total">{{ total_calories }} / {{ calorie_goal }} cal</div>
+        <div class="remaining {% if remaining >= 0 %}positive{% else %}negative{% endif %}">
+            {% if remaining >= 0 %}
+                {{ remaining }} calories remaining
+            {% else %}
+                {{ remaining|slice:"1:" }} calories over
+            {% endif %}
+        </div>
+        
+        <div class="bar-chart">
+            <div class="bar-container">
+                {% with total_nutrients=total_proteins|add:total_carbohydrates|add:total_fats %}
+                    {% if total_nutrients > 0 %}
+                        {% with protein_pct=total_proteins|divisibleby:total_nutrients|floatformat:0 %}
+                            {% widthratio total_proteins total_nutrients 100 as protein_width %}
+                            {% widthratio total_carbohydrates total_nutrients 100 as carbs_width %}
+                            {% widthratio total_fats total_nutrients 100 as fats_width %}
+                            <div class="protein-bar" style="width: {{ protein_width }}%;"></div>
+                            <div class="carbs-bar" style="width: {{ carbs_width }}%;"></div>
+                            <div class="fats-bar" style="width: {{ fats_width }}%;"></div>
+                        {% endwith %}
+                    {% else %}
+                        <div style="width: 100%; text-align: center; color: #999;">No data for this day</div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4c9aff;"></div>
+                    <span>Protein ({{ total_proteins }}g)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ffd966;"></div>
+                    <span>Carbs ({{ total_carbohydrates }}g)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff6b6b;"></div>
+                    <span>Fats ({{ total_fats }}g)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="date-nav">
+        <input type="date" id="datePicker" class="date-selector" value="{{ selected_date|date:'Y-m-d' }}">
+        <button onclick="goToToday()" class="today-btn">Today</button>
+    </div>
+    
+    <div class="quick-dates">
+        {% for date in dates %}
+            <div class="date-chip {% if date == selected_date|date:'Y-m-d' %}active{% endif %}" onclick="selectDate('{{ date|date:'Y-m-d' }}')">
+                {{ date|date:'M d' }}
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="meal-form">
+        <h3>Add Meal for {{ selected_date|date:"F j, Y" }}</h3>
+        <form method="post" action="{% url 'create_meal' %}">
+            {% csrf_token %}
+            <input type="text" name="name" placeholder="Meal name" required>
+            <input type="number" name="calories" placeholder="Calories" required>
+            <input type="number" name="proteins" placeholder="Protein (g)" required>
+            <input type="number" name="carbohydrates" placeholder="Carbs (g)" required>
+            <input type="number" name="fats" placeholder="Fats (g)" required>
+            <input type="number" name="weight" placeholder="Weight (g, optional)">
+            <input type="hidden" name="log_date" value="{{ selected_date|date:'Y-m-d' }}">
+            <button type="submit">Add Meal</button>
+        </form>
+    </div>
+    
+    <h2>Meal History</h2>
+    
+    {% if meals %}
+        {% regroup meals by log_date|date:"Y-m-d" as meals_by_date %}
+        
+        {% for date, date_meals in meals_by_date %}
+            <div class="day-section">
+                <div class="day-header" onclick="selectDate('{{ date }}')">
+                    <strong>{{ date }}</strong>
+                    {% with day_total=0 %}
+                        {% for meal in date_meals %}
+                            {% with day_total=day_total|add:meal.calories %}
+                            {% endwith %}
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+                {% for meal in date_meals %}
+                    <div class="meal-item">
+                        <div class="meal-info">
+                            <strong>{{ meal.name }}</strong><br>
+                            {{ meal.calories }} cal | P:{{ meal.proteins }} C:{{ meal.carbohydrates }} F:{{ meal.fats }}
+                        </div>
+                        <a href="{% url 'detail' meal.id %}" class="edit-link">Edit</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No meals yet. Add your first meal above!</p>
+    {% endif %}
+</div>
+
+<script>
+    function selectDate(date) {
+        window.location.href = '?date=' + date;
+    }
+    
+    function goToToday() {
+        window.location.href = '?date={{ today|date:"Y-m-d" }}';
+    }
+    
+    document.getElementById('datePicker').addEventListener('change', function() {
+        selectDate(this.value);
+    });
+</script>
